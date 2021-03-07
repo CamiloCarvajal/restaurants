@@ -19,6 +19,9 @@ export default function UserGuest() {
         restaurantes de forma sencilla, vota cuál te ha gustado más y comenta
         cómo ha sido tu experiencia.
       </Text>
+      <Text>
+        
+      </Text>
       <Button
         title="Ver tu perfil"
         buttonStyle={styles.button}
@@ -50,5 +53,6 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#7c645c",
+    marginBottom:10
   },
 });

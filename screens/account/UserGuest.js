@@ -1,10 +1,13 @@
 import React from "react";
 import { StyleSheet, Text, Image, ScrollView } from "react-native";
 import { Button } from "react-native-elements";
+import { useNavigation } from "@react-navigation/native";
 
 export default function UserGuest() {
+  const navigation = useNavigation();
+
   return (
-    <ScrollView centerContent="true" style={styles.viewBody} >
+    <ScrollView centerContent="true" style={styles.viewBody}>
       <Image
         source={require("../../assets/dinnerhouselogo.png")}
         resizeMode="contain"
@@ -16,7 +19,11 @@ export default function UserGuest() {
         restaurantes de forma sencilla, vota cuál te ha gustado más y comenta
         cómo ha sido tu experiencia.
       </Text>
-      <Button title="Ver tu perfil" buttonStyle={styles.button} onPress={() => console.log("Hola!!!")}></Button>
+      <Button
+        title="Ver tu perfil"
+        buttonStyle={styles.button}
+        onPress={() => navigation.navigate("login")}
+      ></Button>
     </ScrollView>
   );
 }

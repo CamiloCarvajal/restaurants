@@ -2,8 +2,11 @@ import { size } from "lodash";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button, Input, Icon } from "react-native-elements";
+import { useNavigation } from "@react-navigation/native";
 
 import { validateEmail } from "../../utils/helpers";
+import { registerUser } from "../../utils/action";
+import Loading from "../Loading";
 
 export default function RegisterForm() {
   const [showPasword, setshowPasword] = useState(false);
@@ -11,16 +14,29 @@ export default function RegisterForm() {
   const [errorEmail, setErrorEmail] = useState("");
   const [errorPass, setErrorPass] = useState("");
   const [errorConfirm, setErrorConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigation = useNavigation();
 
   const onChange = (e, type) => {
     setformData({ ...formData, [type]: e.nativeEvent.text });
   };
 
-  const registerUser = () => {
+  const doRegisterUser = async () => {
     if (!validateData()) {
       return;
     }
-    console.log("Bien");
+
+    setLoading(true);
+    const result = await registerUser(formData.email, formData.password);
+    setLoading(false);
+
+    if (!result.statusResponse) {
+      setErrorEmail(result.error);
+      return;
+    }
+
+    navigation.navigate("account");
   };
 
   const validateData = () => {
@@ -40,7 +56,9 @@ export default function RegisterForm() {
     }
 
     if (size(formData.confirm) < 6) {
-      setErrorConfirm("Debes ingresar una contraseña de contrasena de al menos 6 caracteres");
+      setErrorConfirm(
+        "Debes ingresar una contraseña de contrasena de al menos 6 caracteres"
+      );
       isValid = false;
     }
 
@@ -100,8 +118,9 @@ export default function RegisterForm() {
         title="Registrarse"
         containerStyle={styles.btnContainer}
         buttonStyle={styles.btn}
-        onPress={() => registerUser()}
+        onPress={() => doRegisterUser()}
       ></Button>
+      <Loading isVisible={loading} text="Creando cuenta"></Loading>
     </View>
   );
 }

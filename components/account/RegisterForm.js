@@ -1,36 +1,119 @@
-import React from "react";
+import { size } from "lodash";
+import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Button, Input } from "react-native-elements";
+import { Button, Input, Icon } from "react-native-elements";
+
+import { validateEmail } from "../../utils/helpers";
 
 export default function RegisterForm() {
+  const [showPasword, setshowPasword] = useState(false);
+  const [formData, setformData] = useState(defaultFormValues());
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorPass, setErrorPass] = useState("");
+  const [errorConfirm, setErrorConfirm] = useState("");
+
+  const onChange = (e, type) => {
+    setformData({ ...formData, [type]: e.nativeEvent.text });
+  };
+
+  const registerUser = () => {
+    if (!validateData()) {
+      return;
+    }
+    console.log("Bien");
+  };
+
+  const validateData = () => {
+    setErrorEmail("");
+    setErrorPass("");
+    setErrorConfirm("");
+    let isValid = true;
+
+    if (!validateEmail(formData.email)) {
+      setErrorEmail("Debes ingresar un email valido");
+      isValid = false;
+    }
+
+    if (size(formData.password) < 6) {
+      setErrorPass("Debes ingresar una contraseña de al menos 6 caracteres");
+      isValid = false;
+    }
+
+    if (size(formData.confirm) < 6) {
+      setErrorConfirm("Debes ingresar una contraseña de contrasena de al menos 6 caracteres");
+      isValid = false;
+    }
+
+    if (formData.password != formData.confirm) {
+      setErrorPass("Las contraseña no son iguales");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   return (
     <View style={styles.form}>
-      <Input placeholder="Email" containerStyle={styles.input}></Input>
+      <Input
+        placeholder="Email"
+        containerStyle={styles.input}
+        onChange={(e) => onChange(e, "email")}
+        keyboardType="email-address"
+        defaultValue={formData.email}
+        errorMessage={errorEmail}
+      ></Input>
       <Input
         placeholder="Contraseña"
         containerStyle={styles.input}
         password={true}
-        secureTextEntry={true}
+        secureTextEntry={!showPasword}
+        onChange={(e) => onChange(e, "password")}
+        defaultValue={formData.password}
+        errorMessage={errorPass}
+        rightIcon={
+          <Icon
+            type="material-community"
+            name={showPasword ? "eye-off-outline" : "eye-outline"}
+            iconStyle={styles.icon}
+            onPress={() => setshowPasword(!showPasword)}
+          />
+        }
       ></Input>
       <Input
         placeholder="Confirma tu contraseña"
         containerStyle={styles.input}
         password={true}
-        secureTextEntry={true}
+        secureTextEntry={!showPasword}
+        onChange={(e) => onChange(e, "confirm")}
+        defaultValue={formData.confirm}
+        errorMessage={errorConfirm}
+        rightIcon={
+          <Icon
+            type="material-community"
+            name={showPasword ? "eye-off-outline" : "eye-outline"}
+            iconStyle={styles.icon}
+            onPress={() => setshowPasword(!showPasword)}
+          />
+        }
       ></Input>
       <Button
         title="Registrarse"
         containerStyle={styles.btnContainer}
         buttonStyle={styles.btn}
+        onPress={() => registerUser()}
       ></Button>
     </View>
   );
 }
 
+const defaultFormValues = () => {
+  return { email: "", password: "", confirm: "" };
+};
+
 const styles = StyleSheet.create({
   form: {
     marginTop: 30,
-    padding: 20
+    padding: 20,
   },
   input: {
     width: "100%",
@@ -42,5 +125,8 @@ const styles = StyleSheet.create({
   },
   btn: {
     backgroundColor: "#7c645c",
+  },
+  icon: {
+    color: "#947d6c",
   },
 });

@@ -3,6 +3,8 @@ import * as firebase from "firebase";
 import "firebase/firestore";
 import { includes } from "lodash";
 
+import { fileToBlob } from "./helpers";
+
 const db = firebase.firestore(firebaseApp);
 
 export const isUserLoggued = () => {
@@ -40,6 +42,37 @@ export const loginWithEmailAndPassword = async (email, password) => {
   } catch (error) {
     result.statusResponse = false;
     result.error = "Usuario o contraseña no validos";
+  }
+  return result;
+};
+
+export const uploadImage = async (image, path, name) => {
+  const result = { statusResponse: false, error: "", url: null };
+  const reference = firebase.storage().ref(path).child(name);
+  const blob = await fileToBlob(image);
+
+  try {
+    await reference.put(blob);
+    const url = await firebase
+      .storage()
+      .ref(`${path}/${name}`)
+      .getDownloadURL();
+    result.statusResponse = true;
+    result.url = url;
+  } catch (error) {
+    result.error = error;
+  }
+  
+  return result;
+};
+
+export const updateProfile = async (data) => {
+  const result = { statusResponse: true, error: null };
+  try {
+    await firebase.auth().currentUser.updateProfile(data)
+  } catch (error) {
+    result.error = error
+    result.statusResponse = false
   }
   return result;
 };

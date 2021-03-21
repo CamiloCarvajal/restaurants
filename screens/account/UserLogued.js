@@ -7,6 +7,7 @@ import Toast from "react-native-easy-toast";
 import { closeSession, getCurrentUser } from "../../utils/action";
 import Loading from "../../components/Loading";
 import InfoUser from "../../components/account/InfoUser";
+import AccountOptions from "../../components/account/AccountOptions";
 
 export default function UserLogued() {
   const toastRef = useRef();
@@ -19,6 +20,7 @@ export default function UserLogued() {
   useEffect(() => {
     setUser(getCurrentUser());
   }, []);
+
   return (
     <View style={styles.container}>
       {user && (
@@ -28,7 +30,7 @@ export default function UserLogued() {
             setLoading={setLoading}
             setLoadingText={setLoadingText}
           />
-          <Text>Account options</Text>
+          <AccountOptions user={user} toastRef={toastRef}></AccountOptions>
         </View>
       )}
       <Button
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
   container: {
     minHeight: "100%",
     backgroundColor: "#f9f9f9",
-    padding: 2,
+    padding: 1,
   },
   btnCloseSession: {
     marginTop: 30,

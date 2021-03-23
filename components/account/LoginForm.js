@@ -57,7 +57,6 @@ export default function LoginForm() {
       isValid = false;
     }
 
-    console.log(isValid);
     return isValid;
   };
 

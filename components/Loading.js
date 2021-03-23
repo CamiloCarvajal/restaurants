@@ -9,7 +9,7 @@ export default function Loading({ isVisible, text }) {
       isVisible={isVisible}
       windowBackgroundColor="rgba(0,0,4,2,5)"
       overlayBackgroundColor="transparent"
-      overlayStyle={styles.overley}
+      overlayStyle={styles.overlay}
     >
       <View styles={styles.view}>
         <ActivityIndicator size="large" color="#be2f32" />

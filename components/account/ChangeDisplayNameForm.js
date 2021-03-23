@@ -11,7 +11,7 @@ export default function ChangeDisplayNameForm({
   toastRef,
   setReloadUser,
 }) {
-  const [newDisplayName, setNewDisplayName] = useState(null);
+  const [newDisplayName, setNewDisplayName] = useState(displayName);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ export default function ChangeDisplayNameForm({
     }
 
     if (displayName === newDisplayName) {
-      setError("Debes ingresar un numbre diferente al actual");
+      setError("Debes ingresar un nombre diferente al actual");
       return false;
     }
     return true;

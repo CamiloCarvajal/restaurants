@@ -62,17 +62,41 @@ export const uploadImage = async (image, path, name) => {
   } catch (error) {
     result.error = error;
   }
-  
+
   return result;
 };
 
 export const updateProfile = async (data) => {
   const result = { statusResponse: true, error: null };
   try {
-    await firebase.auth().currentUser.updateProfile(data)
+    await firebase.auth().currentUser.updateProfile(data);
   } catch (error) {
-    result.error = error
-    result.statusResponse = false
+    result.error = error;
+    result.statusResponse = false;
+  }
+  return result;
+};
+
+export const reAuthenticate = async (password) => {
+  const result = { statusResponse: true, error: null };
+  const user = getCurrentUser();
+  try {
+    const credentials = firebase.auth.EmailAuthProvider.credential(user.email, password);
+    await user.reauthenticateWithCredential(credentials);
+  } catch (error) {
+    result.error = error;
+    result.statusResponse = false;
+  }
+  return result;
+};
+
+export const updateEmail = async (email) => {
+  const result = { statusResponse: true, error: null };
+  try {
+    await firebase.auth().currentUser.updateEmail(email);
+  } catch (error) {
+    result.error = error;
+    result.statusResponse = false;
   }
   return result;
 };

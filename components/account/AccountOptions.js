@@ -5,6 +5,7 @@ import { Icon, ListItem } from "react-native-elements";
 
 import Modal from "../Modal";
 import ChangeDisplayNameForm from "./ChangeDisplayNameForm";
+import ChangeEmail from "./ChangeEmail";
 
 export default function AccountOptions({ user, toastRef, setReloadUser }) {
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +53,14 @@ export default function AccountOptions({ user, toastRef, setReloadUser }) {
         );
         break;
       case "email":
-        setrenderComponent(<Text>email</Text>);
+        setrenderComponent(
+          <ChangeEmail
+            email={user.email}
+            setShowModal={setShowModal}
+            setReloadUser={setReloadUser}
+            toastRef={toastRef}
+          />
+        );
         break;
       case "password":
         setrenderComponent(<Text>password</Text>);

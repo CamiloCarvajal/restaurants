@@ -33,10 +33,10 @@ export default function ChangeEmail({
       return;
     }
 
-    const resultUpdateEmai = await updateEmail(newEmail);
+    const resultUpdateEmail = await updateEmail(newEmail);
     setLoading(false);
 
-    if (!resultUpdateEmai.statusResponse) {
+    if (!resultUpdateEmail.statusResponse) {
       setErrorEmail("No se puede actualizar, el correo ya esta en uso.");
       return;
     }

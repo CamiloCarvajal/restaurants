@@ -8,6 +8,7 @@ import { fileToBlob } from "./helpers";
 const db = firebase.firestore(firebaseApp);
 
 export const isUserLoggued = () => {
+  //Revisar: Este metodo no sirve, onAuthStateChanged no deja retonar ni modificar variables del scope
   let isLoggued = false;
   firebase.auth().onAuthStateChanged((user) => {
     user != null && (isLoggued = true);

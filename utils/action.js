@@ -82,7 +82,10 @@ export const reAuthenticate = async (password) => {
   const result = { statusResponse: true, error: null };
   const user = getCurrentUser();
   try {
-    const credentials = firebase.auth.EmailAuthProvider.credential(user.email, password);
+    const credentials = firebase.auth.EmailAuthProvider.credential(
+      user.email,
+      password
+    );
     await user.reauthenticateWithCredential(credentials);
   } catch (error) {
     result.error = error;
@@ -106,6 +109,17 @@ export const updatePassword = async (password) => {
   const result = { statusResponse: true, error: null };
   try {
     await firebase.auth().currentUser.updatePassword(password);
+  } catch (error) {
+    result.error = error;
+    result.statusResponse = false;
+  }
+  return result;
+};
+
+export const addDocumentWithoutId = async (collection, data) => {
+  const result = { statusResponse: true, error: null };
+  try {
+    await db.collection(collection).add(data);
   } catch (error) {
     result.error = error;
     result.statusResponse = false;

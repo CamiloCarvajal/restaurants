@@ -9,6 +9,7 @@ import { formatPhone } from "../../utils/helpers";
 import { getDocumentById } from "../../utils/action";
 import { ListItem, Rating, Icon } from "react-native-elements";
 import MapRestaurant from "../../components/restaurants/MapRestaurant";
+import ListReviews from "../../components/restaurants/ListReviews";
 
 const widthScreen = Dimensions.get("window").width;
 
@@ -58,6 +59,7 @@ export default function Restaurant({ navigation, route }) {
         email={restaurant.email}
         phone={formatPhone(restaurant.phone)}
       />
+      <ListReviews navigation={navigation} id={id} />
     </ScrollView>
   );
 }

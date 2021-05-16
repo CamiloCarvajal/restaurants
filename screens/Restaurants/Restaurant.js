@@ -1,23 +1,39 @@
 import { map } from "lodash";
+import firebase from "firebase/app";
 import { Dimensions } from "react-native";
-import React, { useState, useCallback } from "react";
+import Toast from "react-native-easy-toast";
 import { useFocusEffect } from "@react-navigation/native";
 import CarouselImage from "../../components/CarouselImage";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 
+import {
+  addDocumentWithoutId,
+  getDocumentById,
+  getIsFavorite,
+  removeFavoriteRestaurant,
+} from "../../utils/action";
 import Loading from "../../components/Loading";
 import { formatPhone } from "../../utils/helpers";
-import { getDocumentById } from "../../utils/action";
 import { ListItem, Rating, Icon } from "react-native-elements";
-import MapRestaurant from "../../components/restaurants/MapRestaurant";
 import ListReviews from "../../components/restaurants/ListReviews";
+import MapRestaurant from "../../components/restaurants/MapRestaurant";
 
 const widthScreen = Dimensions.get("window").width;
 
 export default function Restaurant({ navigation, route }) {
+  const toastRef = useRef();
   const { id, name } = route.params;
-  const [restaurant, setRestaurant] = useState(null);
+
   const [activeSlide, setActiveSlide] = useState(0);
+  const [restaurant, setRestaurant] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [userLogged, setUserLogged] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  firebase.auth().onAuthStateChanged((user) => {
+    user ? setUserLogged(user) : setUserLogged(false);
+  });
 
   navigation.setOptions({ title: name });
 
@@ -37,9 +53,58 @@ export default function Restaurant({ navigation, route }) {
     }, [])
   );
 
+  useEffect(() => {
+    (async () => {
+      if (userLogged && restaurant) {
+        const response = await getIsFavorite(restaurant.id);
+        response.statusResponse && setIsFavorite(response.isFavorite);
+      }
+    })();
+  }, [userLogged, restaurant]);
+
   if (!restaurant) {
     return <Loading isVisible={true} text="Cargando" />;
   }
+
+  const addFavorite = async () => {
+    if (!userLogged) {
+      toastRef.current.show(
+        "Para agregar el restaurante a favorito, debe estar logueado",
+        3000
+      );
+      return;
+    }
+
+    setLoading(true);
+    const response = await addDocumentWithoutId("favorites", {
+      userId: userLogged.uid,
+      idRestaurant: restaurant.id,
+    });
+    setLoading(false);
+
+    if (response.statusResponse) {
+      setIsFavorite(true);
+      toastRef.current.show("Restaurante agregado a favoritos", 3000);
+    } else {
+      toastRef.current.show(
+        "No se pudo adicionar el restaurante a favoritos, intentalo mas tarde..",
+        3000
+      );
+    }
+  };
+
+  const removeFavorite = async () => {
+    setLoading(true);
+    const response = await removeFavoriteRestaurant(restaurant.id);
+    setLoading(false);
+
+    if (response.statusResponse) {
+      setIsFavorite(false);
+      toastRef.current.show("Restaurante eliminado de favoritos", 3000);
+    } else {
+      toastRef.current.show("No se puedo eliminar de favoritos", 3000);
+    }
+  };
 
   return (
     <ScrollView style={styles.viewBody}>
@@ -50,6 +115,16 @@ export default function Restaurant({ navigation, route }) {
         activeSlide={activeSlide}
         setActiveSlide={setActiveSlide}
       />
+      <View style={styles.viewFavorite}>
+        <Icon
+          size={35}
+          color="#442484"
+          type="material-community"
+          underlayColor="transparent"
+          name={isFavorite ? "heart" : "heart-outline"}
+          onPress={isFavorite ? removeFavorite : addFavorite}
+        />
+      </View>
       <TitleRestaurant
         name={restaurant.name}
         description={restaurant.description}
@@ -63,6 +138,8 @@ export default function Restaurant({ navigation, route }) {
         phone={formatPhone(restaurant.phone)}
       />
       <ListReviews navigation={navigation} id={id} />
+      <Toast ref={toastRef} position="center" opacity={0.9}></Toast>
+      <Loading isVisible={loading} text="Por favor, espere..."></Loading>
     </ScrollView>
   );
 }
@@ -114,6 +191,15 @@ function RestauranInfo({ name, location, address, email, phone }) {
 }
 
 const styles = StyleSheet.create({
+  viewFavorite: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    backgroundColor: "#fff9",
+    borderBottomLeftRadius: 50,
+    padding: 5,
+    paddingLeft: 15,
+  },
   viewBody: {
     flex: 1,
     backgroundColor: "#fff",

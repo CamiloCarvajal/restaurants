@@ -4,12 +4,7 @@ import { Icon } from "react-native-elements";
 import firebase from "firebase/app";
 
 import Loading from "../../components/Loading";
-import {
-  getCurrentUser,
-  getMoreRestaurants,
-  getRestaurants,
-  isUserLoggued,
-} from "../../utils/action";
+import { getMoreRestaurants, getRestaurants } from "../../utils/action";
 import { useFocusEffect } from "@react-navigation/native";
 import { size } from "lodash";
 import ListRestaurants from "../../components/restaurants/ListRestaurants";

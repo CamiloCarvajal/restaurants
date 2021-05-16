@@ -1,7 +1,7 @@
 import { firebaseApp } from "./firebase";
 import * as firebase from "firebase";
 import "firebase/firestore";
-import { includes } from "lodash";
+import { includes, map } from "lodash";
 
 import { fileToBlob } from "./helpers";
 
@@ -225,6 +225,76 @@ export const getRestaurantReviews = async (id) => {
       review.id = doc.id;
       result.reviews.push(review);
     });
+  } catch (error) {
+    result.statusResponse = false;
+    result.error = error;
+  }
+  return result;
+};
+
+export const getIsFavorite = async (idRestaurant) => {
+  const result = { statusResponse: true, error: null, isFavorite: false };
+
+  try {
+    const response = await db
+      .collection("favorites")
+      .where("userId", "==", getCurrentUser().uid)
+      .where("idRestaurant", "==", idRestaurant)
+      .get();
+    result.isFavorite = response.docs.length > 0;
+  } catch (error) {
+    result.statusResponse = false;
+    result.error = error;
+  }
+  return result;
+};
+
+export const removeFavoriteRestaurant = async (idRestaurant) => {
+  const result = { statusResponse: true, error: null, isFavorite: false };
+
+  try {
+    const response = await db
+      .collection("favorites")
+      .where("userId", "==", getCurrentUser().uid)
+      .where("idRestaurant", "==", idRestaurant)
+      .get();
+
+    response.forEach(async (doc) => {
+      await db.collection("favorites").doc(doc.id).delete();
+    });
+  } catch (error) {
+    result.statusResponse = false;
+    result.error = error;
+  }
+  return result;
+};
+
+export const getFavorites = async () => {
+  const result = { statusResponse: true, error: null, favorites: [] };
+
+  try {
+    const response = await db
+      .collection("favorites")
+      .where("userId", "==", getCurrentUser().uid)
+      .get();
+
+    const restaurantId = [];
+
+    response.forEach(async (doc) => {
+      restaurantId.push(doc.data().idRestaurant);
+    });
+
+    await Promise.all(
+      map(restaurantId, async (restaurantID) => {
+        const responseGetRest = await getDocumentById(
+          "restaurants",
+          restaurantID
+        );
+        if (responseGetRest.statusResponse) {
+          result.favorites.push(responseGetRest.document);
+        }
+      })
+    );
   } catch (error) {
     result.statusResponse = false;
     result.error = error;

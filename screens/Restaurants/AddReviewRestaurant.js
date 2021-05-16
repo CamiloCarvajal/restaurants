@@ -36,6 +36,7 @@ export default function AddReviewRestaurant({ navigation, route }) {
       idRestaurant,
       title,
       rating,
+      review,
       createAt: new Date(),
     };
 
@@ -62,17 +63,15 @@ export default function AddReviewRestaurant({ navigation, route }) {
       return;
     }
     const restaurant = responseGetRestaurant.document;
-    console.log(restaurant);
-    const raitingTotal = restaurant.raitingTotal + rating;
-    console.log(">>>");
-    console.log(restaurant.raitingTotal);
+    const ratingTotal = restaurant.ratingTotal + rating;
     const quantityVoting = restaurant.quantityVoting + 1;
-    const ratingResult = raitingTotal / quantityVoting;
+    const ratingResult = ratingTotal / quantityVoting;
+
     const responseUpdateRestaurant = await updateDocument(
       "restaurants",
       idRestaurant,
       {
-        raitingTotal,
+        ratingTotal,
         quantityVoting,
         rating: ratingResult,
       }

@@ -1,11 +1,13 @@
-import { firebaseApp } from "./firebase";
-import * as firebase from "firebase";
 import "firebase/firestore";
-import { includes, map } from "lodash";
+import { FireSQL } from "firesql";
+import * as firebase from "firebase";
+import { firebaseApp } from "./firebase";
+import { includes, lowerCase, map } from "lodash";
 
 import { fileToBlob } from "./helpers";
 
 const db = firebase.firestore(firebaseApp);
+const fireSQL = new FireSQL(firebase.firestore(), { include: "id" });
 
 export const isUserLoggued = () => {
   //Revisar: Este metodo no sirve, onAuthStateChanged no deja retonar ni modificar variables del scope
@@ -278,18 +280,13 @@ export const getFavorites = async () => {
       .where("userId", "==", getCurrentUser().uid)
       .get();
 
-    const restaurantId = [];
-
-    response.forEach(async (doc) => {
-      restaurantId.push(doc.data().idRestaurant);
-    });
-
     await Promise.all(
-      map(restaurantId, async (restaurantID) => {
+      map(response.docs, async (favorite) => {
         const responseGetRest = await getDocumentById(
           "restaurants",
-          restaurantID
+          favorite.data().idRestaurant
         );
+
         if (responseGetRest.statusResponse) {
           result.favorites.push(responseGetRest.document);
         }
@@ -316,6 +313,20 @@ export const getTopRestaurants = async (limit) => {
       restaurant.id = doc.id;
       result.restaurants.push(restaurant);
     });
+  } catch (error) {
+    result.statusResponse = false;
+    result.error = error;
+  }
+  return result;
+};
+
+export const searchRestaurants = async (criteria) => {
+  const result = { statusResponse: true, error: null, restaurants: [] };
+
+  try {
+    result.restaurants = await fireSQL.query(
+      `SELECT * FROM restaurants WHERE name LIKE '${criteria}%'`
+    );
   } catch (error) {
     result.statusResponse = false;
     result.error = error;

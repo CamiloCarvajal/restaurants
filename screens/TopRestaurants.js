@@ -6,10 +6,10 @@ import Loading from "../components/Loading";
 import { getTopRestaurants } from "../utils/action";
 import ListTopRestaurants from "../components/ranking/ListTopRestaurants";
 
-export default function TopRestaurants() {
+export default function TopRestaurants({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [restaurants, setRestaurants] = useState(null);
-  console.log(restaurants);
+
   useFocusEffect(
     useCallback(() => {
       (async function () {
@@ -25,7 +25,7 @@ export default function TopRestaurants() {
 
   return (
     <View>
-      <ListTopRestaurants/>
+      <ListTopRestaurants restaurants={restaurants} navigation={navigation} />
       <Loading isVisible={loading} text="Por favor, espere..." />
     </View>
   );

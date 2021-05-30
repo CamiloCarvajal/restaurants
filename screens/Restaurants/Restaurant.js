@@ -9,9 +9,12 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 
 import {
   addDocumentWithoutId,
+  getCurrentUser,
   getDocumentById,
   getIsFavorite,
   removeFavoriteRestaurant,
+  sendPushNotification,
+  setNotificationMessage,
 } from "../../utils/action";
 import Loading from "../../components/Loading";
 import {
@@ -144,6 +147,7 @@ export default function Restaurant({ navigation, route }) {
         currentUser={userLogged}
         callingCode={restaurant.callingCode}
         phoneRaw={restaurant.phone}
+        setLoading={setLoading}
       />
       <ListReviews navigation={navigation} id={id} />
       <Toast ref={toastRef} position="center" opacity={0.9}></Toast>
@@ -178,10 +182,15 @@ function RestaurantInfo({
   currentUser,
   callingCode,
   phoneRaw,
+  setLoading,
 }) {
-  console.log(phone);
   const listInfo = [
-    { text: address, type: "address", iconLeft: "map-marker" },
+    {
+      text: address,
+      type: "address",
+      iconLeft: "map-marker",
+      iconRight: "message-text-outline",
+    },
     { text: phone, type: "phone", iconLeft: "phone", iconRight: "whatsapp" },
     { text: email, type: "email", iconLeft: "at" },
   ];
@@ -219,6 +228,32 @@ function RestaurantInfo({
           `Estoy interesado en sus servicios.`
         );
       }
+    } else if (type == "address") {
+      sendNotification();
+    }
+  };
+
+  const sendNotification = async () => {
+    setLoading(true);
+    const resultToken = await getDocumentById("users", getCurrentUser().uid);
+    if (!resultToken) {
+      setLoading(false);
+      Alert.alert("No se pudo obtener el token del usuario");
+    }
+    const messageNotification = setNotificationMessage(
+      resultToken.document.token,
+      `Titulo de prueba`,
+      `Mensaje de prueba`,
+      { data: `Data de prueba` }
+    );
+
+    const response = await sendPushNotification(messageNotification);
+    setLoading(false);
+
+    if (response) {
+      Alert.alert("Se ha enviado el mensaje");
+    } else {
+      Alert.alert("Ocurrio un problema enviando el mensaje");
     }
   };
 

@@ -1,8 +1,8 @@
 import "firebase/firestore";
+import { map } from "lodash";
 import { FireSQL } from "firesql";
 import * as firebase from "firebase";
 import { firebaseApp } from "./firebase";
-import { includes, lowerCase, map } from "lodash";
 
 import { fileToBlob } from "./helpers";
 

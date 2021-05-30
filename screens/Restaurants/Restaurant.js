@@ -14,7 +14,12 @@ import {
   removeFavoriteRestaurant,
 } from "../../utils/action";
 import Loading from "../../components/Loading";
-import { formatPhone } from "../../utils/helpers";
+import {
+  callNumber,
+  formatPhone,
+  sendEmail,
+  sendWhatsApp,
+} from "../../utils/helpers";
 import { ListItem, Rating, Icon } from "react-native-elements";
 import ListReviews from "../../components/restaurants/ListReviews";
 import MapRestaurant from "../../components/restaurants/MapRestaurant";
@@ -130,12 +135,15 @@ export default function Restaurant({ navigation, route }) {
         description={restaurant.description}
         rating={restaurant.rating}
       />
-      <RestauranInfo
+      <RestaurantInfo
         name={restaurant.name}
         location={restaurant.location}
         address={restaurant.address}
         email={restaurant.email}
-        phone={formatPhone(restaurant.phone)}
+        phone={formatPhone(restaurant.callingCode, restaurant.phone)}
+        currentUser={userLogged}
+        callingCode={restaurant.callingCode}
+        phoneRaw={restaurant.phone}
       />
       <ListReviews navigation={navigation} id={id} />
       <Toast ref={toastRef} position="center" opacity={0.9}></Toast>
@@ -161,12 +169,58 @@ function TitleRestaurant({ name, description, rating }) {
   );
 }
 
-function RestauranInfo({ name, location, address, email, phone }) {
+function RestaurantInfo({
+  name,
+  location,
+  address,
+  email,
+  phone,
+  currentUser,
+  callingCode,
+  phoneRaw,
+}) {
+  console.log(phone);
   const listInfo = [
-    { text: address, iconName: "map-marker" },
-    { text: phone, iconName: "phone" },
-    { text: email, iconName: "at" },
+    { text: address, type: "address", iconLeft: "map-marker" },
+    { text: phone, type: "phone", iconLeft: "phone", iconRight: "whatsapp" },
+    { text: email, type: "email", iconLeft: "at" },
   ];
+
+  const actionLeft = (type) => {
+    if (type == "phone") {
+      callNumber(phone);
+    } else if (type == "email") {
+      if (currentUser) {
+        sendEmail(
+          email,
+          "Estoy interesado",
+          `Soy ${currentUser.displayName}. Estoy interesado en sus servicios.\nEnviado desde Claudia Sanders Dinner House`
+        );
+      } else {
+        sendEmail(
+          email,
+          "Estoy interesado",
+          `Estoy interesado en sus servicios.`
+        );
+      }
+    }
+  };
+
+  const actionRight = (type) => {
+    if (type == "phone") {
+      if (currentUser) {
+        sendWhatsApp(
+          callingCode + phoneRaw,
+          `Soy ${currentUser.displayName}. Estoy interesado en sus servicios.`
+        );
+      } else {
+        sendWhatsApp(
+          callingCode + phoneRaw,
+          `Estoy interesado en sus servicios.`
+        );
+      }
+    }
+  };
 
   return (
     <View style={styles.viewRestaurantInfo}>
@@ -178,12 +232,21 @@ function RestauranInfo({ name, location, address, email, phone }) {
         <ListItem key={index} style={styles.containerListItem}>
           <Icon
             type="material-community"
-            name={item.iconName}
+            name={item.iconLeft}
             color="#442484"
+            onPress={() => actionLeft(item.type)}
           />
           <ListItem.Content>
             <ListItem.Title>{item.text}</ListItem.Title>
           </ListItem.Content>
+          {item.iconRight && (
+            <Icon
+              type="material-community"
+              name={item.iconRight}
+              color="#442484"
+              onPress={() => actionRight(item.type)}
+            />
+          )}
         </ListItem>
       ))}
     </View>

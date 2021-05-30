@@ -6,8 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
@@ -17,12 +17,19 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.cristiancarvajal.restaurants",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.cristiancarvajal.restaurants",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBke6DJCZlZ4MZqtxhHkb53sB1wpje2JXA"
+        }
       },
       "permissions": [
         "CAMERA_ROLL",
@@ -30,11 +37,14 @@
         "WRITE_EXTERNAL_STORAGE",
         "LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ]
+        "ACCESS_FINE_LOCATION",
+        "MEDIA_LIBRARY",
+        "USER_FACING_NOTIFICATIONS"
+      ],
+      "useNextNotificationsApi": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     }
   }
 }

@@ -4,9 +4,14 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button, Input, Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 
-import { validateEmail } from "../../utils/helpers";
-import { registerUser } from "../../utils/action";
 import Loading from "../Loading";
+import { validateEmail } from "../../utils/helpers";
+import {
+  addDocumentWithId,
+  getCurrentUser,
+  getToken,
+  registerUser,
+} from "../../utils/action";
 
 export default function RegisterForm() {
   const [showPasword, setshowPasword] = useState(false);
@@ -29,13 +34,23 @@ export default function RegisterForm() {
 
     setLoading(true);
     const result = await registerUser(formData.email, formData.password);
-    setLoading(false);
-
     if (!result.statusResponse) {
       setErrorEmail(result.error);
       return;
     }
 
+    const token = await getToken();
+    const resultUser = await addDocumentWithId(
+      "users",
+      { token },
+      getCurrentUser().uid
+    );
+    if (!resultUser.statusResponse) {
+      setLoading(false);
+      setErrorEmail(resultUser.error);
+      return;
+    }
+    setLoading(false);
     navigation.navigate("account");
   };
 

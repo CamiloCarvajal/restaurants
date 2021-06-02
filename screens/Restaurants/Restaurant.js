@@ -1,4 +1,4 @@
-import { map } from "lodash";
+import { isEmpty, map } from "lodash";
 import firebase from "firebase/app";
 import { Dimensions } from "react-native";
 import Toast from "react-native-easy-toast";
@@ -12,6 +12,7 @@ import {
   getCurrentUser,
   getDocumentById,
   getIsFavorite,
+  getUsersFavorite,
   removeFavoriteRestaurant,
   sendPushNotification,
   setNotificationMessage,
@@ -23,9 +24,10 @@ import {
   sendEmail,
   sendWhatsApp,
 } from "../../utils/helpers";
-import { ListItem, Rating, Icon } from "react-native-elements";
+import { ListItem, Rating, Icon, Input, Button } from "react-native-elements";
 import ListReviews from "../../components/restaurants/ListReviews";
 import MapRestaurant from "../../components/restaurants/MapRestaurant";
+import Modal from "../../components/Modal";
 
 const widthScreen = Dimensions.get("window").width;
 
@@ -38,6 +40,7 @@ export default function Restaurant({ navigation, route }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [userLogged, setUserLogged] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [modalNotification, setModalNotification] = useState(false);
 
   firebase.auth().onAuthStateChanged((user) => {
     user ? setUserLogged(user) : setUserLogged(false);
@@ -148,8 +151,15 @@ export default function Restaurant({ navigation, route }) {
         callingCode={restaurant.callingCode}
         phoneRaw={restaurant.phone}
         setLoading={setLoading}
+        setModalNotification={setModalNotification}
       />
       <ListReviews navigation={navigation} id={id} />
+      <SendMessage
+        setLoading={setLoading}
+        restaurant={restaurant}
+        modalNotification={modalNotification}
+        setModalNotification={setModalNotification}
+      />
       <Toast ref={toastRef} position="center" opacity={0.9}></Toast>
       <Loading isVisible={loading} text="Por favor, espere..."></Loading>
     </ScrollView>
@@ -173,6 +183,98 @@ function TitleRestaurant({ name, description, rating }) {
   );
 }
 
+function SendMessage({
+  setLoading,
+  restaurant,
+  modalNotification,
+  setModalNotification,
+}) {
+  const [title, setTitle] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [errorTitle, setErrorTitle] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const sendNotification = async () => {
+    if (!validForm()) {
+      return;
+    }
+
+    setLoading(true);
+    const userInfo = getCurrentUser();
+    const userName = userInfo.displayName ? userInfo.displayName : "Anonimo";
+    const theMessage = `"${message}", sobre el restaurante: ${restaurant.name}`;
+
+    const usersFavorite = await getUsersFavorite(restaurant.id);
+    if (!usersFavorite.statusResponse) {
+      setLoading(false);
+      Alert.alert("Error al enviar el mensaje");
+      return;
+    }
+
+    await Promise.all(
+      map(usersFavorite.users, async (user) => {
+        const messageNotification = setNotificationMessage(
+          user.token,
+          `${userName}, dijo: ${title}`,
+          theMessage,
+          { data: theMessage }
+        );
+        await sendPushNotification(messageNotification);
+      })
+    );
+
+    setTitle("");
+    setMessage("");
+    setLoading(false);
+    setModalNotification(false);
+  };
+
+  const validForm = () => {
+    let isValid = true;
+    setErrorTitle("");
+    setErrorMessage("");
+    if (isEmpty(title)) {
+      setErrorTitle("Debes ingresar el titulo del mensaje");
+      isValid = false;
+    }
+    if (isEmpty(message)) {
+      setErrorMessage("Debes ingresar un mensaje");
+      isValid = false;
+    }
+    return isValid;
+  };
+
+  return (
+    <Modal isVisible={modalNotification} setVisible={setModalNotification}>
+      <View style={styles.modalContainer}>
+        <Text style={styles.textModal}>
+          Enviale un mesaje a los amantes de {restaurant.name}
+        </Text>
+        <Input
+          value={title}
+          placeholder="Titulo del mensaje"
+          onChangeText={(text) => setTitle(text)}
+          errorMessage={errorTitle}
+        />
+        <Input
+          multiline
+          value={message}
+          inputStyle={styles.textArea}
+          placeholder="Mensaje..."
+          onChangeText={(text) => setMessage(text)}
+          errorMessage={errorMessage}
+        />
+        <Button
+          title="Enviar mensaje"
+          buttonStyle={styles.btnSend}
+          containerStyle={styles.btnSendContainer}
+          onPress={sendNotification}
+        />
+      </View>
+    </Modal>
+  );
+}
+
 function RestaurantInfo({
   name,
   location,
@@ -182,7 +284,7 @@ function RestaurantInfo({
   currentUser,
   callingCode,
   phoneRaw,
-  setLoading,
+  setModalNotification,
 }) {
   const listInfo = [
     {
@@ -229,31 +331,7 @@ function RestaurantInfo({
         );
       }
     } else if (type == "address") {
-      sendNotification();
-    }
-  };
-
-  const sendNotification = async () => {
-    setLoading(true);
-    const resultToken = await getDocumentById("users", getCurrentUser().uid);
-    if (!resultToken) {
-      setLoading(false);
-      Alert.alert("No se pudo obtener el token del usuario");
-    }
-    const messageNotification = setNotificationMessage(
-      resultToken.document.token,
-      `Titulo de prueba`,
-      `Mensaje de prueba`,
-      { data: `Data de prueba` }
-    );
-
-    const response = await sendPushNotification(messageNotification);
-    setLoading(false);
-
-    if (response) {
-      Alert.alert("Se ha enviado el mensaje");
-    } else {
-      Alert.alert("Ocurrio un problema enviando el mensaje");
+      setModalNotification(true);
     }
   };
 
@@ -332,5 +410,24 @@ const styles = StyleSheet.create({
   containerListItem: {
     borderBottomColor: "#a375c2",
     borderBottomWidth: 1,
+  },
+  textArea: {
+    height: 50,
+    paddingHorizontal: 10,
+  },
+  btnSend: {
+    backgroundColor: "#442848",
+  },
+  btnSendContainer: {
+    width: "95%",
+  },
+  textModal: {
+    color: "#000",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

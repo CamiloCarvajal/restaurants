@@ -31,7 +31,7 @@ export default function AccountOptions({ user, toastRef, setReloadUser }) {
         onPress: () => selectedComponent("email"),
       },
       {
-        title: "Cambiar contrasena",
+        title: "Cambiar contraseña",
         iconNameLeft: "lock-reset",
         iconColorLeft: "#a7bfd3",
         iconNameRight: "chevron-right",

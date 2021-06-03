@@ -72,7 +72,7 @@ export default function RegisterForm() {
 
     if (size(formData.confirm) < 6) {
       setErrorConfirm(
-        "Debes ingresar una contraseña de contrasena de al menos 6 caracteres"
+        "Debes ingresar una contraseña de contraseña de al menos 6 caracteres"
       );
       isValid = false;
     }

@@ -17,11 +17,18 @@
       "**/*"
     ],
     "ios": {
+      "supportsTablet": true,
       "bundleIdentifier": "com.cristiancarvajal.restaurants",
-      "supportsTablet": true
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.154186276108-hm97smsu6lfesm26o6d9tvsal81kjui5"
+        }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.cristiancarvajal.restaurants",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

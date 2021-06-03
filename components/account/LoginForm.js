@@ -1,12 +1,14 @@
+import { isEmpty } from "lodash";
+import * as firebase from "firebase";
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Button, Input, Icon } from "react-native-elements";
+import * as GoogleSignIn from "expo-google-sign-in";
 import { useNavigation } from "@react-navigation/native";
+import { Button, Input, Icon } from "react-native-elements";
+import { StyleSheet, Platform, Alert, View } from "react-native";
 
 import Loading from "../Loading";
 import { validateEmail } from "../../utils/helpers";
 import { loginWithEmailAndPassword } from "../../utils/action";
-import { isEmpty } from "lodash";
 
 export default function LoginForm() {
   const [showPasword, setshowPasword] = useState(false);
@@ -21,6 +23,72 @@ export default function LoginForm() {
   const onChange = (e, type) => {
     setformData({ ...formData, [type]: e.nativeEvent.text });
   };
+
+async function googleSignInAsync() {
+  try {
+    await GoogleSignIn.initAsync();
+    if (Platform.OS === "android") {
+      await GoogleSignIn.askForPlayServicesAsync();
+    }
+    const { type, user } = await GoogleSignIn.signInAsync();
+    if (type === "success") {
+      onSignIn(user);
+      setLoading(false);
+      return true;
+    } else {
+      setLoading(false);
+      Alert.alert(JSON.stringify(result));
+      return { cancelled: true };
+    }
+  } catch (error) {
+    setLoading(false);
+    Alert.alert(error.message);
+    return { error: true };
+  }
+}
+
+function onSignIn(googleUser) {
+  const unsubscribe = firebase
+    .auth()
+    .onAuthStateChanged(function (firebaseUser) {
+      unsubscribe();
+      if (!isUserEqual(googleUser, firebaseUser)) {
+        const credential = firebase.auth.GoogleAuthProvider.credential(
+          googleUser.auth.idToken,
+          googleUser.auth.accessToken
+        );
+        setLoading(true);
+        firebase
+          .auth()
+          .signInWithCredential(credential)
+          .then(() => {
+            setLoading(false);
+          })
+          .catch(function (error) {
+            setLoading(false);
+            Alert.alert(error.message);
+          });
+      } else {
+        Alert.alert("Usuario ya está logueado");
+      }
+    });
+}
+
+function isUserEqual(googleUser, firebaseUser) {
+  if (firebaseUser) {
+    let providerData = firebaseUser.providerData;
+    for (let i = 0; i < providerData.length; i++) {
+      if (
+        providerData[i].providerId ===
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID &&
+        providerData[i].uid === googleUser.getBasicProfile().getId()
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
   const doLogin = async () => {
     if (!validateData()) {
@@ -93,6 +161,21 @@ export default function LoginForm() {
         buttonStyle={styles.btn}
         onPress={() => doLogin()}
       ></Button>
+      <Button
+        title="Iniciar sesión con google"
+        containerStyle={styles.btnContainer}
+        buttonStyle={styles.btnGoogle}
+        onPress={googleSignInAsync}
+        icon={
+          <Icon
+            size={10}
+            color="#ffff"
+            marginRight={10}
+            name="google"
+            type="material-community"
+          />
+        }
+      ></Button>
       <Loading isVisible={loading} text="Iniciando sesión"></Loading>
     </View>
   );
@@ -122,5 +205,8 @@ const styles = StyleSheet.create({
   },
   btn: {
     backgroundColor: "#7c645c",
+  },
+  btnGoogle: {
+    backgroundColor: "#EA4335",
   },
 });

@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:154186276108:android:d583080e1f1537290a7d29",
+        "mobilesdk_app_id": "1:154186276108:android:6cd670a406216ea50a7d29",
         "android_client_info": {
           "package_name": "com.cristiancarvajal.restaurants"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "154186276108-niab10n9dpv4dg796vh0ee55rv0dbruk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cristiancarvajal.restaurants",
+            "certificate_hash": "8859b18cc0f9f3af0bf6ed25ab228221ca91e1f9"
+          }
+        },
         {
           "client_id": "154186276108-6en7sksu0qg1kf5m0dhstl6va799ca9c.apps.googleusercontent.com",
           "client_type": 3
@@ -29,6 +37,13 @@
             {
               "client_id": "154186276108-6en7sksu0qg1kf5m0dhstl6va799ca9c.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "154186276108-hm97smsu6lfesm26o6d9tvsal81kjui5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cristiancarvajal.restaurants"
+              }
             }
           ]
         }
